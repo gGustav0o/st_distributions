@@ -1,69 +1,90 @@
 ﻿
+using MathNet.Numerics.Random;
+using st_distributions.Distributions;
+using MathNet.Numerics.Distributions;
+
 namespace st_distributions
 {
     public class StatisticsManager
     {
-        private static readonly Random Rand = new();
-        private static readonly int[] SampleSizes = [10, 50, 1000];
+        private static readonly int[] SampleSizes = [10, 50, 100, 1000];
         private const int Iterations = 1000;
         private static readonly string OutputFolder = "Results";
         public static void RunAnalysis()
-        {   
+        {
+            if (Directory.Exists(OutputFolder))
+            {
+                Directory.Delete(OutputFolder, true);
+            }
             Directory.CreateDirectory(OutputFolder);
 
             foreach (var size in SampleSizes)
             {
-                Console.WriteLine($"Обрабатываем выборки размером {size}...");
+                Console.WriteLine($"Process samples of size {size}...");
 
-                double[][] datasets = [
-                    DataGenerator.GenerateNormalSample(size),
-                    DataGenerator.GenerateCauchySample(size),
-                    DataGenerator.GeneratePoissonSample(size),
-                    DataGenerator.GenerateUniformSample(size)
+                SystemRandomSource rand;
+
+                double uniformLeft = -Math.Sqrt(3.0);
+                double uniformRight = Math.Sqrt(3.0);
+                double cauchyLocation = 0.0;
+                double cauchyScale = 1.0;
+                
+                Distribution[] datasets = [
+                    new Normal(Normal.Samples(rand, 0, 1).Take(size).ToArray()),
+                    new Cauchy(DataGenerator.GenerateCauchySample(size, cauchyLocation), cauchyLocation),
+                    new Poisson(DataGenerator.GeneratePoissonSample(size)),
+                    new Uniform(DataGenerator.GenerateUniformSample(size, uniformLeft, uniformRight), uniformLeft, uniformRight),
                 ];
-
-                string[] names = ["Normal", "Cauchy", "Poisson", "Uniform"];
 
                 for (int i = 0; i < datasets.Length; i++)
                 {
-                    string filename = $"{names[i]}_{size}.png";
-                    Plotter.PlotHistogram(datasets[i], filename, names[i], size);
+                    string dir = $"{OutputFolder}/{datasets[i].GetType().Name}";
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    string filename = $"{dir}/{datasets[i].GetType().Name}_{size}.png";
+                    Plotter.PlotHistogram(datasets[i], filename, size);
                     Console.WriteLine($"Сохранен график: {filename}");
+                    filename = $"{dir}/{datasets[i].GetType().Name}_{size}_data.txt";
+                    SaveSamplesToFile(datasets[i].Data, filename);
                 }
 
-                ComputeStatistics(datasets, names, size, Iterations, OutputFolder);
+                ComputeStatistics(datasets, Iterations, OutputFolder);
             }
 
             Console.WriteLine("Все расчёты завершены!");
         }
+        private static void SaveSamplesToFile(double[] data, string filename)
+        {
+            using (StreamWriter writer = new(filename))
+            {
+                writer.WriteLine("Value"); // Заголовок
+                foreach (var value in data)
+                {
+                    writer.WriteLine(value);
+                }
+            }
+            Console.WriteLine($"Выборка сохранена: {filename}");
+        }
 
-        private static void ComputeStatistics(double[][] datasets, string[] names, int size, int iterations, string outputFolder)
+        private static void ComputeStatistics(Distribution[] datasets, int size, string outputFolder)
         {
             string resultFile = $"{outputFolder}/Statistics_{size}.csv";
             using (StreamWriter writer = new(resultFile))
             {
-                writer.WriteLine("Распределение,Среднее,Дисперсия,Медиана,zQ");
+                writer.WriteLine("Distribution;Average;Variance;Median;zQ");
 
                 for (int i = 0; i < datasets.Length; i++)
                 {
-                    double meanSum = 0, varianceSum = 0, medianSum = 0, zQSum = 0;
+                    var sample = datasets[i];
 
-                    for (int j = 0; j < iterations; j++)
-                    {
-                        double[] sample = datasets[i].OrderBy(x => Rand.Next()).Take(size).ToArray();
+                    double mean = sample.Data.Average();
+                    double variance = sample.Data.Select(x => x * x).Average() - mean * mean;
+                    double median = GetMedian(sample.Data);
+                    double zQ = GetQuartileMean(sample.Data);
 
-                        double mean = sample.Average();
-                        double variance = sample.Select(x => x * x).Average() - mean * mean;
-                        double median = GetMedian(sample);
-                        double zQ = GetQuartileMean(sample);
-
-                        meanSum += mean;
-                        varianceSum += variance;
-                        medianSum += median;
-                        zQSum += zQ;
-                    }
-
-                    writer.WriteLine($"{names[i]},{meanSum / iterations},{varianceSum / iterations},{medianSum / iterations},{zQSum / iterations}");
+                    writer.WriteLine($"{sample.GetType().Name};{mean};{variance};{median};{zQ}");
                 }
             }
             Console.WriteLine($"Файл со статистикой сохранён: {resultFile}");
