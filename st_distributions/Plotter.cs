@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ScottPlot;
-
-
+﻿
 namespace st_distributions
 {
-    class Plotter
+    public static class Plotter
     {
         public static void PlotHistogram(double[] data, string filename, string title, int size)
         {
-            var plt = new ScottPlot.Plot(600, 400);
+            var plt = new ScottPlot.Plot();
 
-            var hist = new ScottPlot.Statistics.Histogram(data, binCount: 20);
-            plt.AddBar(hist.counts, hist.binCenters);
+            var histogram = ScottPlot.Statistics.Histogram.WithBinCount(20, data);
+
+            plt.Add.Bars(histogram.Bins, histogram.Counts);
 
             plt.Title($"{title} (n={size})");
             plt.XLabel("Значения");
             plt.YLabel("Частота");
 
             Directory.CreateDirectory("Results");
-            plt.SaveFig($"Results/{filename}");
+
+            plt.SavePng($"Results/{filename}", 600, 400);
         }
     }
 }

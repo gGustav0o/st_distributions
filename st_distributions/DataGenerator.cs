@@ -4,7 +4,7 @@ namespace st_distributions
 {
     class DataGenerator
     {
-        private static Random rand = new Random();
+        private static readonly Random rand = new();
 
         public static double[] GenerateNormalSample(int size) =>
             Normal.Samples(rand, 0, 1).Take(size).ToArray();

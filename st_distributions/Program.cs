@@ -2,7 +2,6 @@
 {
     static void Main()
     {
-        StatisticsManager manager = new StatisticsManager();
-        manager.RunAnalysis();
+        st_distributions.StatisticsManager.RunAnalysis();
     }
 }
