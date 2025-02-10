@@ -1,14 +1,14 @@
 ﻿
+using MathNet.Numerics.Distributions;
 using ScottPlot;
 using ScottPlot.Plottables;
-using st_distributions.Distributions;
 using System.Collections.Generic;
 
 namespace st_distributions
 {
     public static class Plotter
     {
-        public static void PlotHistogram(Distribution distribution, string filename, int size)
+        public static void PlotHistogram(IUnivariateDistribution distribution, string filename, int size)
         {
             var plt = new ScottPlot.Plot();
 

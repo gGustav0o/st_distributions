@@ -1,7 +1,7 @@
 ﻿
 using MathNet.Numerics.Random;
-using st_distributions.Distributions;
 using MathNet.Numerics.Distributions;
+using st_distributions.Distributions;
 
 namespace st_distributions
 {
@@ -22,18 +22,13 @@ namespace st_distributions
             {
                 Console.WriteLine($"Process samples of size {size}...");
 
-                SystemRandomSource rand;
+                SystemRandomSource rand = new();
 
-                double uniformLeft = -Math.Sqrt(3.0);
-                double uniformRight = Math.Sqrt(3.0);
-                double cauchyLocation = 0.0;
-                double cauchyScale = 1.0;
-                
                 Distribution[] datasets = [
-                    new Normal(Normal.Samples(rand, 0, 1).Take(size).ToArray()),
-                    new Cauchy(DataGenerator.GenerateCauchySample(size, cauchyLocation), cauchyLocation),
-                    new Poisson(DataGenerator.GeneratePoissonSample(size)),
-                    new Uniform(DataGenerator.GenerateUniformSample(size, uniformLeft, uniformRight), uniformLeft, uniformRight),
+                    new Normal(0, 1),
+                    new Cauchy(0, 1),
+                    new Poisson(10),
+                    new ContinuousUniform(-Math.Sqrt(3), Math.Sqrt(3))
                 ];
 
                 for (int i = 0; i < datasets.Length; i++)
