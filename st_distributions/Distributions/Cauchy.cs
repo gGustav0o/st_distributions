@@ -13,7 +13,14 @@ namespace st_distributions.Distributions
         public override MathNet.Numerics.Distributions.Cauchy NumDistribution { get; }
         public override double[] GetXs(double step) =>
             Generate.Range(NumDistribution.Location - 10 * NumDistribution.Scale, NumDistribution.Location + 10 * NumDistribution.Scale, step);
-        public override double[] GetYs(double[] x, double scale = 1) =>
-            Data.Select(x => NumDistribution.Density(x)).ToArray();
+        public override double[] GetYs(double[] x)
+        {
+            double[] ys = new double[x.Length];
+            for (int i = 0; i < x.Length; i++)
+            {
+                ys[i] = NumDistribution.Density(i);
+            }
+            return ys;
+        }
     }
 }

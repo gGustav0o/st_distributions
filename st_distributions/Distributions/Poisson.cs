@@ -1,21 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ScottPlot;
 
 namespace st_distributions.Distributions
 {
     class Poisson : Distribution
     {
-        public Poisson(double[] data) : base(data) { }
-        public override double[] GetXs(double step)
+        public Poisson(double lambda, int size)
         {
-            return new double[0];
+            NumDistribution = new(lambda);
+            Data = NumDistribution.Samples().Take(size).Select(x => (double)x).ToArray();
         }
-        public override double[] GetYs(double[] x, double scale = 1)
+        public override MathNet.Numerics.Distributions.Poisson NumDistribution { get; }
+        public override double[] GetXs(double step) =>
+            Enumerable.Range(0, ((int)NumDistribution.Lambda * 3)).Select(x => (double)x).ToArray();
+        public override double[] GetYs(double[] x)
         {
-            return new double[0];
+            double[] ys = new double[x.Length];
+            for (int i = 0; i < x.Length; i++)
+            {
+                ys[i] = NumDistribution.Probability(i);
+            }
+            return ys;
         }
     }
 }

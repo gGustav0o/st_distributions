@@ -2,6 +2,10 @@
 using MathNet.Numerics.Random;
 using MathNet.Numerics.Distributions;
 using st_distributions.Distributions;
+using Normal = st_distributions.Distributions.Normal;
+using Cauchy = st_distributions.Distributions.Cauchy;
+using Poisson = st_distributions.Distributions.Poisson;
+
 
 namespace st_distributions
 {
@@ -25,10 +29,10 @@ namespace st_distributions
                 SystemRandomSource rand = new();
 
                 Distribution[] datasets = [
-                    new Normal(0, 1),
-                    new Cauchy(0, 1),
-                    new Poisson(10),
-                    new ContinuousUniform(-Math.Sqrt(3), Math.Sqrt(3))
+                    new Normal(0, 1, size),
+                    new Cauchy(0, 1, size),
+                    new Poisson(10, size),
+                    new Uniform(-Math.Sqrt(3), Math.Sqrt(3), size)
                 ];
 
                 for (int i = 0; i < datasets.Length; i++)

@@ -2,13 +2,14 @@
 using MathNet.Numerics.Distributions;
 using ScottPlot;
 using ScottPlot.Plottables;
+using st_distributions.Distributions;
 using System.Collections.Generic;
 
 namespace st_distributions
 {
     public static class Plotter
     {
-        public static void PlotHistogram(IUnivariateDistribution distribution, string filename, int size)
+        public static void PlotHistogram(Distribution distribution, string filename, int size)
         {
             var plt = new ScottPlot.Plot();
 
@@ -43,7 +44,7 @@ namespace st_distributions
             }
 
             double[] xs = distribution.GetXs(0.01);
-            double[] ys = distribution.GetYs(xs, 1.0);
+            double[] ys = distribution.GetYs(xs);
 
             var curve = plt.Add.ScatterLine(xs, ys);
             curve.LineWidth = 2;

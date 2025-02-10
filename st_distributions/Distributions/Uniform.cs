@@ -4,18 +4,22 @@ namespace st_distributions.Distributions
 {
     class Uniform : Distribution
     {
-        public Uniform(double[] data, double left, double right) : base(data)
+        public Uniform(double lower, double upper, int size)
         {
-            Left = left;
-            Right = right;
+            NumDistribution = new(lower, upper);
+            Data = NumDistribution.Samples().Take(size).ToArray();
         }
+        public override MathNet.Numerics.Distributions.ContinuousUniform NumDistribution { get; }
         public override double[] GetXs(double step) =>
-            Generate.Range(Left * 1.1, Right * 1.1);
-        public override double[] GetYs(double[] x, double scale = 1)
+            Generate.Range(NumDistribution.LowerBound * 1.1, NumDistribution.UpperBound * 1.1, step);
+        public override double[] GetYs(double[] x)
         {
-            return new double[0];
+            double[] ys = new double[x.Length];
+            for (int i = 0; i < x.Length; i++)
+            {
+                ys[i] = NumDistribution.Density(i);
+            }
+            return ys;
         }
-        public double Left { get;}
-        public double Right { get;}
     }
 }
