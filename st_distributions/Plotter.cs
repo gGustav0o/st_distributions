@@ -42,8 +42,13 @@ namespace st_distributions
                 bar.FillColor = Colors.C0.Lighten(.3);
             }
 
+
+            double maxHistY = hist.GetProbability().Max();   // Максимальная высота гистограммы
+            
+
+            double binWidth = hist.FirstBinSize;
             double[] xs = distribution.GetXs(0.01);
-            double[] ys = distribution.GetYs(xs, 1.0);
+            double[] ys = distribution.GetYs(xs, hist);
 
             var curve = plt.Add.ScatterLine(xs, ys);
             curve.LineWidth = 2;

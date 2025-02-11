@@ -2,6 +2,9 @@
 using MathNet.Numerics.Random;
 using st_distributions.Distributions;
 using MathNet.Numerics.Distributions;
+using Normal = st_distributions.Distributions.Normal;
+using Cauchy = st_distributions.Distributions.Cauchy;
+using Poisson = st_distributions.Distributions.Poisson;
 
 namespace st_distributions
 {
@@ -22,17 +25,18 @@ namespace st_distributions
             {
                 Console.WriteLine($"Process samples of size {size}...");
 
-                SystemRandomSource rand;
+                SystemRandomSource rand = new();
 
                 double uniformLeft = -Math.Sqrt(3.0);
                 double uniformRight = Math.Sqrt(3.0);
                 double cauchyLocation = 0.0;
                 double cauchyScale = 1.0;
+                double poissonLambda = 10.0;
                 
                 Distribution[] datasets = [
-                    new Normal(Normal.Samples(rand, 0, 1).Take(size).ToArray()),
-                    new Cauchy(DataGenerator.GenerateCauchySample(size, cauchyLocation), cauchyLocation),
-                    new Poisson(DataGenerator.GeneratePoissonSample(size)),
+                    new Normal(MathNet.Numerics.Distributions.Normal.Samples(rand, 0, 1).Take(size).ToArray(), 0, 1),
+                    new Cauchy(DataGenerator.GenerateCauchySample(size, cauchyLocation, cauchyScale), cauchyLocation, cauchyScale),
+                    new Poisson(DataGenerator.GeneratePoissonSample(size), poissonLambda),
                     new Uniform(DataGenerator.GenerateUniformSample(size, uniformLeft, uniformRight), uniformLeft, uniformRight),
                 ];
 

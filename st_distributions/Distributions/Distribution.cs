@@ -1,4 +1,5 @@
-﻿using ScottPlot;
+﻿using ScottPlot.Statistics;
+using ScottPlot;
 
 namespace st_distributions.Distributions
 {
@@ -10,7 +11,7 @@ namespace st_distributions.Distributions
         }
         public double[] Data { get; set; }
         public abstract double[] GetXs(double step);
-        public abstract double[] GetYs(double[] x, double scale = 1);
+        public abstract double[] GetYs(double[] x, Histogram hist);
         public double StdDev() =>
             Math.Sqrt(
                 Data.Select(x => x * x).Average()

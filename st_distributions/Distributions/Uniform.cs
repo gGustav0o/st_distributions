@@ -1,4 +1,6 @@
-﻿using ScottPlot;
+﻿using MathNet.Numerics.Distributions;
+using ScottPlot;
+using ScottPlot.Statistics;
 
 namespace st_distributions.Distributions
 {
@@ -11,9 +13,16 @@ namespace st_distributions.Distributions
         }
         public override double[] GetXs(double step) =>
             Generate.Range(Left * 1.1, Right * 1.1);
-        public override double[] GetYs(double[] x, double scale = 1)
+        public override double[] GetYs(double[] x, Histogram hist)
         {
-            return new double[0];
+            double binWidth = hist.FirstBinSize;
+            ContinuousUniform distr = new(Left, Right);
+            double[] ys = new double[x.Length];
+            for(int i = 0; i < x.Length; i++)
+            {
+                ys[i] = distr.Density(x[i]) * binWidth;
+            }
+            return ys;
         }
         public double Left { get;}
         public double Right { get;}
