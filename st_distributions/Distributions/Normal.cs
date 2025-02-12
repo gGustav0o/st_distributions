@@ -7,29 +7,23 @@ namespace st_distributions.Distributions
 {
     class Normal : Distribution
     {
-        public Normal(double[] data, double mean, double stddev) : base(data)
+        public Normal(double mean, double stddev, int size)
+            : base(size, new MathNet.Numerics.Distributions.Normal(mean: mean, stddev: stddev))
         {
-            Mean = mean;
-            Stddev = stddev;
+            Data = MathNet.Numerics.Distributions.Normal.Samples(mean: mean, stddev: stddev).Take(size).ToArray();
         }
         public override double[] GetXs(double step)
-        {
-            double mean = Data.Average();
-            double stdDev = StdDev();
-            return Generate.Range(mean - 4 * stdDev, mean + 4 * stdDev, step);
-        }
+             => Generate.Range(Distr().Mean - 4 * Distr().StdDev, Distr().Mean + 4 * Distr().StdDev, step);
         public override double[] GetYs(double[] x, Histogram hist)
         {
-            double binWidth = hist.FirstBinSize;
-            MathNet.Numerics.Distributions.Normal distr = new(Mean, Stddev);
             double[] ys = new double[x.Length];
             for (int i = 0; i < x.Length; i++)
             {
-                ys[i] = distr.Density(x[i]) * binWidth;
+                ys[i] = Distr().Density(x[i]) * Scale(hist);
             }
             return ys;
         }
-        public double Mean { get; }
-        public double Stddev { get; }
+        private MathNet.Numerics.Distributions.Normal Distr() => (MathNet.Numerics.Distributions.Normal)_distr;
+        protected override double Scale(Histogram hist) => hist.FirstBinSize;
     }
 }

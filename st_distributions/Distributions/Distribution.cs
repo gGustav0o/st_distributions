@@ -1,21 +1,20 @@
 ﻿using ScottPlot.Statistics;
 using ScottPlot;
+using MathNet.Numerics.Distributions;
+using MathNet.Numerics.Random;
 
 namespace st_distributions.Distributions
 {
     public abstract class Distribution
     {
-        public Distribution(double[] data)
-        {
-            Data = data;
-        }
-        public double[] Data { get; set; }
+        public Distribution(int size, IUnivariateDistribution distr) { Size = size; _distr = distr; }
+        public double[] Data { get; protected set; }
         public abstract double[] GetXs(double step);
         public abstract double[] GetYs(double[] x, Histogram hist);
-        public double StdDev() =>
-            Math.Sqrt(
-                Data.Select(x => x * x).Average()
-                - Math.Pow(Data.Average(), 2.0)
-            );
+        protected readonly IUnivariateDistribution _distr;
+        public int Size {  get; private set; }
+        public double StdDev() => _distr.StdDev;
+        protected abstract double Scale(Histogram hist);
+        protected static readonly SystemRandomSource rand = new();
     }
 }

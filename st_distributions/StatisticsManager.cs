@@ -24,20 +24,12 @@ namespace st_distributions
             foreach (var size in SampleSizes)
             {
                 Console.WriteLine($"Process samples of size {size}...");
-
-                SystemRandomSource rand = new();
-
-                double uniformLeft = -Math.Sqrt(3.0);
-                double uniformRight = Math.Sqrt(3.0);
-                double cauchyLocation = 0.0;
-                double cauchyScale = 1.0;
-                double poissonLambda = 10.0;
-                
+               
                 Distribution[] datasets = [
-                    new Normal(MathNet.Numerics.Distributions.Normal.Samples(rand, 0, 1).Take(size).ToArray(), 0, 1),
-                    new Cauchy(DataGenerator.GenerateCauchySample(size, cauchyLocation, cauchyScale), cauchyLocation, cauchyScale),
-                    new Poisson(DataGenerator.GeneratePoissonSample(size), poissonLambda),
-                    new Uniform(DataGenerator.GenerateUniformSample(size, uniformLeft, uniformRight), uniformLeft, uniformRight),
+                    new Normal(0, 1, size),
+                    new Cauchy(0.0, 1.0, size),
+                    new Poisson(10.0, size),
+                    new Uniform(-Math.Sqrt(3.0), Math.Sqrt(3.0), size),
                 ];
 
                 for (int i = 0; i < datasets.Length; i++)
@@ -63,7 +55,7 @@ namespace st_distributions
         {
             using (StreamWriter writer = new(filename))
             {
-                writer.WriteLine("Value"); // Заголовок
+                writer.WriteLine("Value");
                 foreach (var value in data)
                 {
                     writer.WriteLine(value);
