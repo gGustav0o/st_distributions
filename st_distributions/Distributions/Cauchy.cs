@@ -9,7 +9,7 @@ namespace st_distributions.Distributions
         public Cauchy(double location, double scale, int size)
             : base(size, new MathNet.Numerics.Distributions.Cauchy(location, scale))
         {
-            Data = MathNet.Numerics.Distributions.Cauchy.Samples(rand, location, scale).Take(size).ToArray();
+            Data = MathNet.Numerics.Distributions.Cauchy.Samples(Rand, location, scale).Take(size).ToArray();
         }
         public override double[] GetXs(double step) =>
             Generate.Range(Distr().Location - 10 * Distr().Scale, Distr().Location + 10 * Distr().Scale, step);

@@ -1,5 +1,4 @@
 ﻿using ScottPlot.Statistics;
-using ScottPlot;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Random;
 
@@ -15,6 +14,6 @@ namespace st_distributions.Distributions
         public int Size {  get; private set; }
         public double StdDev() => _distr.StdDev;
         protected abstract double Scale(Histogram hist);
-        protected static readonly SystemRandomSource rand = new();
+        protected static readonly SystemRandomSource Rand = new();
     }
 }

@@ -1,7 +1,6 @@
 ﻿
-using MathNet.Numerics.Random;
+using MathNet.Numerics.Statistics;
 using st_distributions.Distributions;
-using MathNet.Numerics.Distributions;
 using Normal = st_distributions.Distributions.Normal;
 using Cauchy = st_distributions.Distributions.Cauchy;
 using Poisson = st_distributions.Distributions.Poisson;
@@ -76,7 +75,7 @@ namespace st_distributions
                     var sample = datasets[i];
 
                     double mean = sample.Data.Average();
-                    double variance = sample.Data.Select(x => x * x).Average() - mean * mean;
+                    double variance = Statistics.Variance(sample.Data);
                     double median = GetMedian(sample.Data);
                     double zQ = GetQuartileMean(sample.Data);
 

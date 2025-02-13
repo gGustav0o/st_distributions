@@ -13,7 +13,7 @@ namespace st_distributions.Distributions
         public Poisson(double lambda, int size)
             : base(size, new MathNet.Numerics.Distributions.Poisson(lambda))
         {
-            Data = MathNet.Numerics.Distributions.Poisson.Samples(rand, 10).Take(size).Select(x => (double)x).ToArray();
+            Data = MathNet.Numerics.Distributions.Poisson.Samples(Rand, 10).Take(size).Select(x => (double)x).ToArray();
         }
         public override double[] GetXs(double step)
             => Enumerable.Range(0, (int)Distr().Lambda * 3).Select(x => (double)x).ToArray();

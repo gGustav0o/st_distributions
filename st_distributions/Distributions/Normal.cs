@@ -1,6 +1,4 @@
 ﻿using ScottPlot;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Collections.Generic;
 using ScottPlot.Statistics;
 
 namespace st_distributions.Distributions
