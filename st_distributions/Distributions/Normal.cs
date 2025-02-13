@@ -1,25 +1,27 @@
 ﻿using ScottPlot;
+using ScottPlot.Statistics;
 
 namespace st_distributions.Distributions
 {
     class Normal : Distribution
     {
-        public Normal(double mean, double stdDev, int size)
+        public Normal(double mean, double stddev, int size)
+            : base(size, new MathNet.Numerics.Distributions.Normal(mean: mean, stddev: stddev))
         {
-            NumDistribution = new(mean, stdDev);
-            Data = NumDistribution.Samples().Take(size).ToArray();
+            Data = MathNet.Numerics.Distributions.Normal.Samples(mean: mean, stddev: stddev).Take(size).ToArray();
         }
-        public override MathNet.Numerics.Distributions.Normal NumDistribution { get; }
-        public override double[] GetXs(double step) =>
-            Generate.Range(NumDistribution.Mean - 4 * NumDistribution.StdDev, NumDistribution.Mean + 4 * NumDistribution.StdDev, step);
-        public override double[] GetYs(double[] x)
+        public override double[] GetXs(double step)
+             => Generate.Range(Distr().Mean - 4 * Distr().StdDev, Distr().Mean + 4 * Distr().StdDev, step);
+        public override double[] GetYs(double[] x, Histogram hist)
         {
             double[] ys = new double[x.Length];
             for (int i = 0; i < x.Length; i++)
             {
-                ys[i] = NumDistribution.Density(i);
+                ys[i] = Distr().Density(x[i]) * Scale(hist);
             }
             return ys;
         }
+        private MathNet.Numerics.Distributions.Normal Distr() => (MathNet.Numerics.Distributions.Normal)_distr;
+        protected override double Scale(Histogram hist) => hist.FirstBinSize;
     }
 }

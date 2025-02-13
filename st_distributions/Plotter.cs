@@ -1,5 +1,4 @@
 ﻿
-using MathNet.Numerics.Distributions;
 using ScottPlot;
 using ScottPlot.Plottables;
 using st_distributions.Distributions;
@@ -43,8 +42,13 @@ namespace st_distributions
                 bar.FillColor = Colors.C0.Lighten(.3);
             }
 
+
+            double maxHistY = hist.GetProbability().Max();   // Максимальная высота гистограммы
+            
+
+            double binWidth = hist.FirstBinSize;
             double[] xs = distribution.GetXs(0.01);
-            double[] ys = distribution.GetYs(xs);
+            double[] ys = distribution.GetYs(xs, hist);
 
             var curve = plt.Add.ScatterLine(xs, ys);
             curve.LineWidth = 2;

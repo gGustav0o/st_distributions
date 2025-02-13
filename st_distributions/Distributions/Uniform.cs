@@ -1,25 +1,28 @@
-﻿using ScottPlot;
+﻿using MathNet.Numerics.Distributions;
+using ScottPlot;
+using ScottPlot.Statistics;
 
 namespace st_distributions.Distributions
 {
     class Uniform : Distribution
     {
         public Uniform(double lower, double upper, int size)
+            : base(size, new MathNet.Numerics.Distributions.ContinuousUniform(lower, upper))
         {
-            NumDistribution = new(lower, upper);
-            Data = NumDistribution.Samples().Take(size).ToArray();
+            Data = MathNet.Numerics.Distributions.ContinuousUniform.Samples(lower, upper).Take(size).ToArray();
         }
-        public override MathNet.Numerics.Distributions.ContinuousUniform NumDistribution { get; }
         public override double[] GetXs(double step) =>
-            Generate.Range(NumDistribution.LowerBound * 1.1, NumDistribution.UpperBound * 1.1, step);
-        public override double[] GetYs(double[] x)
+            Generate.Range(Distr().LowerBound * 1.1, Distr().UpperBound * 1.1);
+        public override double[] GetYs(double[] x, Histogram hist)
         {
             double[] ys = new double[x.Length];
-            for (int i = 0; i < x.Length; i++)
+            for(int i = 0; i < x.Length; i++)
             {
-                ys[i] = NumDistribution.Density(i);
+                ys[i] = Distr().Density(x[i]) * Scale(hist);
             }
             return ys;
         }
+        protected override double Scale(Histogram hist) => hist.FirstBinSize;
+        private MathNet.Numerics.Distributions.ContinuousUniform Distr() => (MathNet.Numerics.Distributions.ContinuousUniform)_distr;
     }
 }

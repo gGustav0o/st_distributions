@@ -1,11 +1,9 @@
 ﻿
-using MathNet.Numerics.Random;
-using MathNet.Numerics.Distributions;
+using MathNet.Numerics.Statistics;
 using st_distributions.Distributions;
 using Normal = st_distributions.Distributions.Normal;
 using Cauchy = st_distributions.Distributions.Cauchy;
 using Poisson = st_distributions.Distributions.Poisson;
-
 
 namespace st_distributions
 {
@@ -25,14 +23,12 @@ namespace st_distributions
             foreach (var size in SampleSizes)
             {
                 Console.WriteLine($"Process samples of size {size}...");
-
-                SystemRandomSource rand = new();
-
+               
                 Distribution[] datasets = [
                     new Normal(0, 1, size),
-                    new Cauchy(0, 1, size),
-                    new Poisson(10, size),
-                    new Uniform(-Math.Sqrt(3), Math.Sqrt(3), size)
+                    new Cauchy(0.0, 1.0, size),
+                    new Poisson(10.0, size),
+                    new Uniform(-Math.Sqrt(3.0), Math.Sqrt(3.0), size),
                 ];
 
                 for (int i = 0; i < datasets.Length; i++)
@@ -58,7 +54,7 @@ namespace st_distributions
         {
             using (StreamWriter writer = new(filename))
             {
-                writer.WriteLine("Value"); // Заголовок
+                writer.WriteLine("Value");
                 foreach (var value in data)
                 {
                     writer.WriteLine(value);
@@ -79,7 +75,7 @@ namespace st_distributions
                     var sample = datasets[i];
 
                     double mean = sample.Data.Average();
-                    double variance = sample.Data.Select(x => x * x).Average() - mean * mean;
+                    double variance = Statistics.Variance(sample.Data);
                     double median = GetMedian(sample.Data);
                     double zQ = GetQuartileMean(sample.Data);
 
