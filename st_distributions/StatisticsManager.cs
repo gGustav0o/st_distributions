@@ -88,11 +88,6 @@ namespace st_distributions
                         double median = GetMedian(set.Data);
                         double zQ = GetQuartileMean(set.Data);
 
-                        //statistics[set.GetType().Name][size][nameof(mean)].Add(mean);
-                        //statistics[set.GetType().Name][size][nameof(variance)].Add(variance);
-                        //statistics[set.GetType().Name][size][nameof(median)].Add(median);
-                        //statistics[set.GetType().Name][size][nameof(zQ)].Add(zQ);
-
                         if(!statistics.ContainsKey(set.GetType().Name))
                         {
                             statistics.Add(set.GetType().Name, []);

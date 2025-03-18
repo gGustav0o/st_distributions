@@ -16,8 +16,11 @@ namespace st_distributions.Distributions
         {
             Data = MathNet.Numerics.Distributions.ContinuousUniform.Samples(lower, upper).Take(size).ToArray();
         }
-        public override double[] GetXs(double step) =>
-            Generate.Range(Distr().LowerBound * 1.1, Distr().UpperBound * 1.1);
+        public override double[] GetXs(double step)
+        {
+            var xs = Generate.Range(Distr().LowerBound, Distr().UpperBound, step).ToList();
+            return xs.ToArray();
+        }
         public override double[] GetYs(double[] x, Histogram hist)
         {
             double[] ys = new double[x.Length];

@@ -15,6 +15,7 @@ using WpfMath.Parsers;
 using XamlMath.Exceptions;
 using WpfMath;
 using System.IO;
+using System.Windows.Shapes;
 
 namespace st_distributions
 {
@@ -38,7 +39,13 @@ namespace st_distributions
                 AddDistributionSection(section, infoItem);
             }
 
-            AddStatisticsTable(section);
+            string dir = $"{StatisticsManager.OutputFolder}/Statistics";
+            string[] files = Directory.GetFiles(dir, "*.csv");
+            foreach (var item in files)
+            {
+                Section tableSection = document.AddSection();
+                AddStatisticsTable(tableSection, item);
+            }
 
             PdfDocumentRenderer renderer = new()
             {
@@ -95,44 +102,46 @@ namespace st_distributions
             }
         }
 
-        private static void AddStatisticsTable(Section section)
+        private static void AddStatisticsTable(Section section, string file)
         {
-            string csvPath = $"{StatisticsManager.OutputFolder}/Statistics_1000.csv";
-            if (!File.Exists(csvPath)) return;
+            if (!File.Exists(file)) return;
+
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+            string[] parts = fileName.Split('_');
+            if (parts.Length > 1)
+            {
+                string result = parts[1];
+                section.AddParagraph(result).Format.Font.Size = 10;
+            }
 
             var table = section.AddTable();
             table.Borders.Width = 0.75;
 
-            // Читаем все строки CSV-файла
-            var lines = File.ReadAllLines(csvPath);
-            if (lines.Length < 2) return; // Если в файле нет данных, выходим
+            var lines = File.ReadAllLines(file);
+            if (lines.Length < 2) return;
 
-            // Читаем заголовки из первой строки
             var headers = lines[0].Split(';');
 
-            // Добавляем столбцы (ширина будет динамической)
             foreach (var header in headers)
             {
-                table.AddColumn("3.5cm");
+                table.AddColumn("5cm");
             }
 
-            // Создаём заголовок таблицы
             Row headerRow = table.AddRow();
             headerRow.Shading.Color = Colors.LightGray;
 
             for (int i = 0; i < headers.Length; i++)
             {
-                headerRow.Cells[i].AddParagraph(headers[i]); // Устанавливаем заголовок из CSV
+                headerRow.Cells[i].AddParagraph(headers[i]);
                 headerRow.Cells[i].Format.Font.Bold = true;
                 headerRow.Cells[i].Format.Alignment = ParagraphAlignment.Center;
                 headerRow.Cells[i].VerticalAlignment = VerticalAlignment.Center;
             }
 
-            // Читаем и заполняем строки таблицы, начиная со второй строки CSV
             foreach (var line in lines.Skip(1))
             {
                 var values = line.Split(';');
-                if (values.Length < headers.Length) continue; // Пропускаем строки с недостаточными данными
+                if (values.Length < headers.Length) continue;
 
                 Row row = table.AddRow();
                 row.TopPadding = 2;
@@ -148,13 +157,12 @@ namespace st_distributions
                     }
                     else
                     {
-                        paragraph.AddText(values[i]); // Если текст, просто добавляем его
+                        paragraph.AddText(values[i]);
                     }
 
-                    // Форматирование ячеек для лучшего отображения
                     row.Cells[i].Format.Alignment = ParagraphAlignment.Center;
                     row.Cells[i].VerticalAlignment = VerticalAlignment.Center;
-                    row.Cells[i].Format.Font.Size = 10; // Уменьшаем шрифт, чтобы избежать выхода текста
+                    row.Cells[i].Format.Font.Size = 10;
                 }
             }
         }

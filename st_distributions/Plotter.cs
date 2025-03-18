@@ -20,15 +20,6 @@ namespace st_distributions
             {
                 barsCount = (int)(2.0 * Math.Pow(size, 1.0 / 3.0));
             }
-            //else
-            //{
-            //    var sorted = data.OrderBy(x => x).ToArray();
-            //    double dQ3 = sorted[(int)(3.0 * size / 4.0)];
-            //    double dQ1 = sorted[(int)(size / 4.0)];
-            //    double dIqr = dQ3 - dQ1;
-            //    double dBinWidth = (int)(2.0 * (dQ3 - dQ1) / Math.Pow(size, 1.0 / 3.0));
-            //    barsCount = (int)((sorted.Max() - sorted.Min()) / dBinWidth);
-            //}
 
             Histogram hist = Histogram.WithBinCount(barsCount, distribution.Data);
             BarPlot barPlot = plt.Add.Bars(hist.Bins, hist.GetProbability());
@@ -41,7 +32,7 @@ namespace st_distributions
                 bar.FillColor = Colors.C0.Lighten(.3);
             }
 
-            double[] xs = distribution.GetXs(0.01);
+            double[] xs = distribution.GetXs(.001);
             double[] ys = distribution.GetYs(xs, hist);
 
             Scatter curve = plt.Add.ScatterLine(xs, ys);
