@@ -11,7 +11,12 @@ namespace st_distributions.Distributions
     class Poisson : Distribution
     {
         public Poisson(double lambda, int size)
-            : base(size, new MathNet.Numerics.Distributions.Poisson(lambda))
+            : base
+            (
+                  size
+                  , new MathNet.Numerics.Distributions.Poisson(lambda)
+                  , @"P(X = k) = \frac{\lambda^k e^{-\lambda}}{k!}"
+            )
         {
             Data = MathNet.Numerics.Distributions.Poisson.Samples(Rand, 10).Take(size).Select(x => (double)x).ToArray();
         }

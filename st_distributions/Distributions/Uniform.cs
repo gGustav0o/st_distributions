@@ -7,7 +7,12 @@ namespace st_distributions.Distributions
     class Uniform : Distribution
     {
         public Uniform(double lower, double upper, int size)
-            : base(size, new MathNet.Numerics.Distributions.ContinuousUniform(lower, upper))
+            : base
+            (
+                  size
+                  , new MathNet.Numerics.Distributions.ContinuousUniform(lower, upper)
+                  , @"f(x) = \frac{1}{b-a}, \; a \leq x \leq b"
+            )
         {
             Data = MathNet.Numerics.Distributions.ContinuousUniform.Samples(lower, upper).Take(size).ToArray();
         }

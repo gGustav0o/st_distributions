@@ -1,8 +1,7 @@
-﻿
-using ScottPlot;
+﻿using ScottPlot;
 using ScottPlot.Plottables;
+using ScottPlot.Statistics;
 using st_distributions.Distributions;
-using System.Collections.Generic;
 
 namespace st_distributions
 {
@@ -10,7 +9,7 @@ namespace st_distributions
     {
         public static void PlotHistogram(Distribution distribution, string filename, int size)
         {
-            var plt = new ScottPlot.Plot();
+            var plt = new Plot();
 
             int barsCount = 0;
             if(size <= 200)
@@ -31,10 +30,10 @@ namespace st_distributions
             //    barsCount = (int)((sorted.Max() - sorted.Min()) / dBinWidth);
             //}
 
-            var hist = ScottPlot.Statistics.Histogram.WithBinCount(barsCount, distribution.Data);
-            var barPlot = plt.Add.Bars(hist.Bins, hist.GetProbability());
+            Histogram hist = Histogram.WithBinCount(barsCount, distribution.Data);
+            BarPlot barPlot = plt.Add.Bars(hist.Bins, hist.GetProbability());
 
-            foreach (var bar in barPlot.Bars)
+            foreach (Bar bar in barPlot.Bars)
             {
                 bar.Size = hist.FirstBinSize;
                 bar.LineWidth = 0;
@@ -42,15 +41,10 @@ namespace st_distributions
                 bar.FillColor = Colors.C0.Lighten(.3);
             }
 
-
-            double maxHistY = hist.GetProbability().Max();   // Максимальная высота гистограммы
-            
-
-            double binWidth = hist.FirstBinSize;
             double[] xs = distribution.GetXs(0.01);
             double[] ys = distribution.GetYs(xs, hist);
 
-            var curve = plt.Add.ScatterLine(xs, ys);
+            Scatter curve = plt.Add.ScatterLine(xs, ys);
             curve.LineWidth = 2;
             curve.LineColor = Colors.Black;
             curve.LinePattern = LinePattern.DenselyDashed;

@@ -4,6 +4,7 @@ using st_distributions.Distributions;
 using Normal = st_distributions.Distributions.Normal;
 using Cauchy = st_distributions.Distributions.Cauchy;
 using Poisson = st_distributions.Distributions.Poisson;
+using System.IO;
 
 namespace st_distributions
 {
@@ -11,9 +12,10 @@ namespace st_distributions
     {
         private static readonly int[] SampleSizes = [10, 50, 100, 1000];
         private const int Iterations = 1000;
-        private static readonly string OutputFolder = "Results";
-        public static void RunAnalysis()
+        public static readonly string OutputFolder = "Results";
+        public static Dictionary<string, ReportDistributionInfo> RunAnalysis()
         {
+            Dictionary<string, ReportDistributionInfo> infoDict = [];
             if (Directory.Exists(OutputFolder))
             {
                 Directory.Delete(OutputFolder, true);
@@ -23,7 +25,7 @@ namespace st_distributions
             foreach (var size in SampleSizes)
             {
                 Console.WriteLine($"Process samples of size {size}...");
-               
+
                 Distribution[] datasets = [
                     new Normal(0, 1, size),
                     new Cauchy(0.0, 1.0, size),
@@ -33,22 +35,36 @@ namespace st_distributions
 
                 for (int i = 0; i < datasets.Length; i++)
                 {
-                    string dir = $"{OutputFolder}/{datasets[i].GetType().Name}";
+                    string distr = datasets[i].GetType().Name;
+                    string dir = $"{OutputFolder}/{distr}";
+                    string filename = $"{dir}/{distr}_{size}.png";
+
+                    if (!infoDict.ContainsKey(distr))
+                    {
+                        infoDict[distr] = new()
+                        {
+                            Name = distr,
+                            LatexFormula = datasets[i].LatexFormula
+                        };
+                    }
+                    infoDict[distr].Samples.Add(new Tuple<int, string>(size, filename));
+                    
                     if (!Directory.Exists(dir))
                     {
                         Directory.CreateDirectory(dir);
                     }
-                    string filename = $"{dir}/{datasets[i].GetType().Name}_{size}.png";
+                    
                     Plotter.PlotHistogram(datasets[i], filename, size);
                     Console.WriteLine($"Сохранен график: {filename}");
-                    filename = $"{dir}/{datasets[i].GetType().Name}_{size}_data.txt";
-                    SaveSamplesToFile(datasets[i].Data, filename);
+                    string sampleFilename = $"{dir}/{distr}_{size}_data.txt";
+                    SaveSamplesToFile(datasets[i].Data, sampleFilename);
                 }
 
                 ComputeStatistics(datasets, Iterations, OutputFolder);
             }
 
             Console.WriteLine("Все расчёты завершены!");
+            return infoDict;
         }
         private static void SaveSamplesToFile(double[] data, string filename)
         {

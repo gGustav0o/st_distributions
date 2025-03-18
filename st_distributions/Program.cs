@@ -1,7 +1,10 @@
-﻿class Program
+﻿using st_distributions;
+
+class Program
 {
     static void Main()
     {
-        st_distributions.StatisticsManager.RunAnalysis();
+        var results = st_distributions.StatisticsManager.RunAnalysis();
+        ReportGenerator.GeneratePdf(results);
     }
 }

@@ -6,7 +6,12 @@ namespace st_distributions.Distributions
     class Normal : Distribution
     {
         public Normal(double mean, double stddev, int size)
-            : base(size, new MathNet.Numerics.Distributions.Normal(mean: mean, stddev: stddev))
+            : base
+            (
+                  size
+                  , new MathNet.Numerics.Distributions.Normal(mean: mean, stddev: stddev)
+                  , @"f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}"
+            )
         {
             Data = MathNet.Numerics.Distributions.Normal.Samples(mean: mean, stddev: stddev).Take(size).ToArray();
         }

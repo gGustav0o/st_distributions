@@ -7,7 +7,12 @@ namespace st_distributions.Distributions
     class Cauchy : Distribution
     {
         public Cauchy(double location, double scale, int size)
-            : base(size, new MathNet.Numerics.Distributions.Cauchy(location, scale))
+            : base
+            (
+                  size
+                  , new MathNet.Numerics.Distributions.Cauchy(location, scale)
+                  , @"f(x) = \frac{1}{\pi \gamma \left[1+\left(\frac{x-x_0}{\gamma}\right)^2\right]}"
+            )
         {
             Data = MathNet.Numerics.Distributions.Cauchy.Samples(Rand, location, scale).Take(size).ToArray();
         }
