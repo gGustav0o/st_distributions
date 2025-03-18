@@ -5,13 +5,16 @@ using Normal = st_distributions.Distributions.Normal;
 using Cauchy = st_distributions.Distributions.Cauchy;
 using Poisson = st_distributions.Distributions.Poisson;
 using System.IO;
+using CSharpMath;
+using MathNet.Numerics.LinearAlgebra.Solvers;
+using System.Data;
+using static OpenTK.Graphics.OpenGL.GL;
 
 namespace st_distributions
 {
     public class StatisticsManager
     {
-        private static readonly int[] SampleSizes = [10, 50, 100, 1000];
-        private const int Iterations = 1000;
+        private static readonly int Iterations = 1_000;
         public static readonly string OutputFolder = "Results";
         public static Dictionary<string, ReportDistributionInfo> RunAnalysis()
         {
@@ -22,6 +25,7 @@ namespace st_distributions
             }
             Directory.CreateDirectory(OutputFolder);
 
+            int[] SampleSizes = [10, 50, 1000];
             foreach (var size in SampleSizes)
             {
                 Console.WriteLine($"Process samples of size {size}...");
@@ -59,10 +63,74 @@ namespace st_distributions
                     string sampleFilename = $"{dir}/{distr}_{size}_data.txt";
                     SaveSamplesToFile(datasets[i].Data, sampleFilename);
                 }
-
-                ComputeStatistics(datasets, Iterations, OutputFolder);
             }
 
+            Dictionary<string, Dictionary<int, Dictionary<string, List<double>>>> statistics = [];
+
+            SampleSizes = [10, 100, 1000];
+            for (var i = 0; i < Iterations; i++)
+            {
+                foreach (var size in SampleSizes)
+                {
+
+                    Distribution[] datasets = [
+                        new Normal(0, 1, size),
+                        new Cauchy(0.0, 1.0, size),
+                        new Poisson(10.0, size),
+                        new Uniform(-Math.Sqrt(3.0), Math.Sqrt(3.0), size),
+                    ];
+
+
+                    foreach (var set in datasets)
+                    {
+                        double mean = set.Data.Average();
+                        double variance = Statistics.Variance(set.Data);
+                        double median = GetMedian(set.Data);
+                        double zQ = GetQuartileMean(set.Data);
+
+                        //statistics[set.GetType().Name][size][nameof(mean)].Add(mean);
+                        //statistics[set.GetType().Name][size][nameof(variance)].Add(variance);
+                        //statistics[set.GetType().Name][size][nameof(median)].Add(median);
+                        //statistics[set.GetType().Name][size][nameof(zQ)].Add(zQ);
+
+                        if(!statistics.ContainsKey(set.GetType().Name))
+                        {
+                            statistics.Add(set.GetType().Name, []);
+                        }
+                        if (!statistics[set.GetType().Name].ContainsKey(size))
+                        {
+                            statistics[set.GetType().Name].Add(size, []);
+                        }
+                        if (!statistics[set.GetType().Name][size].ContainsKey(nameof(mean)))
+                        {
+                            statistics[set.GetType().Name][size].Add(nameof(mean), []);
+                        }
+                        if (!statistics[set.GetType().Name][size].ContainsKey(nameof(variance)))
+                        {
+                            statistics[set.GetType().Name][size].Add(nameof(variance), []);
+                        }
+                        if (!statistics[set.GetType().Name][size].ContainsKey(nameof(median)))
+                        {
+                            statistics[set.GetType().Name][size].Add(nameof(median), []);
+                        }
+                        if (!statistics[set.GetType().Name][size].ContainsKey(nameof(zQ)))
+                        {
+                            statistics[set.GetType().Name][size].Add(nameof(zQ), []);
+                        }
+                        statistics[set.GetType().Name][size][nameof(mean)].Add(mean);
+                        statistics[set.GetType().Name][size][nameof(variance)].Add(variance);
+                        statistics[set.GetType().Name][size][nameof(median)].Add(median);
+                        statistics[set.GetType().Name][size][nameof(zQ)].Add(zQ);
+                    }
+                }
+            }
+            foreach (var set in statistics)
+            {
+                Console.WriteLine(set.Key);
+            }
+
+            SaveTables(statistics, $"{OutputFolder}/Statistics");
+            
             Console.WriteLine("Все расчёты завершены!");
             return infoDict;
         }
@@ -79,26 +147,64 @@ namespace st_distributions
             Console.WriteLine($"Выборка сохранена: {filename}");
         }
 
-        private static void ComputeStatistics(Distribution[] datasets, int size, string outputFolder)
+        private static void SaveTables(Dictionary<string, Dictionary<int, Dictionary<string, List<double>>>> statistics, string folder)
         {
-            string resultFile = $"{outputFolder}/Statistics_{size}.csv";
-            using (StreamWriter writer = new(resultFile))
+            if (Directory.Exists(folder))
             {
-                writer.WriteLine("Distribution;Average;Variance;Median;zQ");
+                Directory.Delete(folder, true);
+            }
+            Directory.CreateDirectory(folder);
 
-                for (int i = 0; i < datasets.Length; i++)
+            foreach (var key in statistics.Keys)
+            {
+                var dataset = statistics[key];
+                string resultFile = $"{folder}/Statistics_{key}.csv";
+                using (StreamWriter writer = new(resultFile))
                 {
-                    var sample = datasets[i];
+                    string titlesLine = ";" + string.Join(";", dataset.Keys);
+                    writer.WriteLine(titlesLine);
 
-                    double mean = sample.Data.Average();
-                    double variance = Statistics.Variance(sample.Data);
-                    double median = GetMedian(sample.Data);
-                    double zQ = GetQuartileMean(sample.Data);
+                    List<string> lines = [];
 
-                    writer.WriteLine($"{sample.GetType().Name};{mean};{variance};{median};{zQ}");
+                    foreach (var size in dataset.Keys)
+                    {
+
+                        Dictionary<string, double> e_st = [];
+                        Dictionary<string, double> d_st = [];
+
+                        var set = dataset[size];
+                        var variables = set.Keys.ToArray();
+                        foreach(var v in variables)
+                        {
+                            e_st.Add(v, set[v].Average());
+                            d_st.Add(v, SqMean(set[v]));
+                        }
+
+                        if(lines.IsEmpty())
+                        {
+                            lines = Enumerable.Repeat("", e_st.Count + d_st.Count).ToList();
+                        }
+
+                        for(int i = 0; i < e_st.Count; i++)
+                        {
+                            if (lines[i].IsEmpty()) { lines[i] = $"E({variables[i]});"; }
+                            lines[i] += $"{e_st[variables[i]]};";
+                        }
+                        for (int i = e_st.Count; i < lines.Count; i++)
+                        {
+                            int j = i - e_st.Count;
+                            if (lines[i].IsEmpty()) { lines[i] = $"D({variables[j]});"; }
+                            lines[i] += $"{d_st[variables[j]]};";
+                        }
+                    }
+
+                    foreach (var l in lines)
+                    {
+                        writer.WriteLine(l);
+                    }
                 }
             }
-            Console.WriteLine($"Файл со статистикой сохранён: {resultFile}");
+
         }
 
         private static double GetMedian(double[] data)
@@ -114,6 +220,9 @@ namespace st_distributions
             var sorted = data.OrderBy(x => x).ToArray();
             return (sorted[n / 4] + sorted[3 * n / 4]) / 2.0;
         }
+
+        private static double SqMean(IEnumerable<double> data)
+            => data.Select(v => v * v).Average() - data.Average() * data.Average();
     }
 
 }
