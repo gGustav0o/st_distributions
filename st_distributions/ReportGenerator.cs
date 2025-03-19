@@ -21,7 +21,8 @@ namespace st_distributions
 {
     class ReportGenerator
     {
-        private static readonly string PdfFileName = $"{StatisticsManager.OutputFolder}/Report.pdf";
+        private static readonly string PdfFileName = $"{StatisticsManager.OutputFolderHist}/Report.pdf";
+        private static readonly string PdfFileNameLab2 = $"{StatisticsManager.OutputFolderBox}/Report.pdf";
 
         public static void GeneratePdf(Dictionary<string, ReportDistributionInfo> info)
         {
@@ -39,7 +40,7 @@ namespace st_distributions
                 AddDistributionSection(section, infoItem);
             }
 
-            string dir = $"{StatisticsManager.OutputFolder}/Statistics";
+            string dir = $"{StatisticsManager.OutputFolderHist}/Statistics";
             string[] files = Directory.GetFiles(dir, "*.csv");
             foreach (var item in files)
             {
@@ -56,7 +57,95 @@ namespace st_distributions
 
             Console.WriteLine($"PDF-отчет сохранен: {PdfFileName}");
         }
+        public static void GeneratePdfLab2()
+        {
+            Document document = new();
 
+            Section section = document.AddSection();
+            section.PageSetup.Orientation = Orientation.Landscape;
+
+            Paragraph title = section.AddParagraph("Бокс-плоты");
+            title.Format.Font.Size = 18;
+            title.Format.Font.Bold = true;
+            title.Format.SpaceAfter = "10pt";
+
+            string dir = $"{StatisticsManager.OutputFolderBox}";
+            string[] files = Directory.GetFiles(dir, "*.png");
+            foreach (var item in files)
+            {
+                Section tableSection = document.AddSection();
+                string fileName = System.IO.Path.GetFileNameWithoutExtension(item);
+                section.AddParagraph(fileName).Format.Font.Size = 10;
+                MigraDoc.DocumentObjectModel.Shapes.Image image = section.AddImage(item);
+                image.Width = "10cm";
+            }
+
+            files = Directory.GetFiles(dir, "*.csv");
+            foreach (var item in files)
+            {
+                Section tableSection = document.AddSection();
+                var table = section.AddTable();
+                table.Borders.Width = 0.75;
+
+                var lines = File.ReadAllLines(item);
+                if (lines.Length < 2) return;
+
+                var headers = lines[0].Split(';');
+
+                foreach (var header in headers)
+                {
+                    table.AddColumn("5cm");
+                }
+
+                Row headerRow = table.AddRow();
+                headerRow.Shading.Color = Colors.LightGray;
+
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    headerRow.Cells[i].AddParagraph(headers[i]);
+                    headerRow.Cells[i].Format.Font.Bold = true;
+                    headerRow.Cells[i].Format.Alignment = ParagraphAlignment.Center;
+                    headerRow.Cells[i].VerticalAlignment = VerticalAlignment.Center;
+                }
+
+                foreach (var line in lines.Skip(1))
+                {
+                    var values = line.Split(';');
+                    if (values.Length < headers.Length) continue;
+
+                    Row row = table.AddRow();
+                    row.TopPadding = 2;
+                    row.BottomPadding = 2;
+
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        Paragraph paragraph = row.Cells[i].AddParagraph();
+
+                        if (double.TryParse(values[i], out double number))
+                        {
+                            paragraph.AddText(Math.Round(number, 4).ToString("F4"));
+                        }
+                        else
+                        {
+                            paragraph.AddText(values[i]);
+                        }
+
+                        row.Cells[i].Format.Alignment = ParagraphAlignment.Center;
+                        row.Cells[i].VerticalAlignment = VerticalAlignment.Center;
+                        row.Cells[i].Format.Font.Size = 10;
+                    }
+                }
+            }
+
+            PdfDocumentRenderer renderer = new()
+            {
+                Document = document
+            };
+            renderer.RenderDocument();
+            renderer.PdfDocument.Save(PdfFileNameLab2);
+
+            Console.WriteLine($"PDF-отчет сохранен: {PdfFileNameLab2}");
+        }
         private static void AddDistributionSection(Section section, KeyValuePair<string, ReportDistributionInfo> infoItem)
         {
             Paragraph header = section.AddParagraph($"{infoItem.Key} Distribution");
@@ -79,14 +168,13 @@ namespace st_distributions
             string latexFormula = infoItem.Value.LatexFormula;
             if (!string.IsNullOrEmpty(latexFormula))
             {
-                string formulaPath = $"{StatisticsManager.OutputFolder}/{infoItem.Key}/{infoItem.Key}_formula.png";
+                string formulaPath = $"{StatisticsManager.OutputFolderHist}/{infoItem.Key}/{infoItem.Key}_formula.png";
                 RenderLatexFormula(latexFormula, formulaPath);
                 MigraDoc.DocumentObjectModel.Shapes.Image formulaImage = section.AddImage(formulaPath);
                 formulaImage.Width = "5cm";
                 section.AddParagraph().Format.SpaceAfter = "10pt";
             }
         }
-
         private static void RenderLatexFormula(string latex, string outputPath)
         {
             try
@@ -101,7 +189,6 @@ namespace st_distributions
                 Console.Error.WriteLine("Error when parsing formula: " + latex + "; " + e.Message);
             }
         }
-
         private static void AddStatisticsTable(Section section, string file)
         {
             if (!File.Exists(file)) return;

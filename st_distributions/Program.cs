@@ -4,7 +4,9 @@ class Program
 {
     static void Main()
     {
-        var results = st_distributions.StatisticsManager.RunAnalysis();
-        ReportGenerator.GeneratePdf(results);
+        //var results = st_distributions.StatisticsManager.RunAnalysis();
+        //ReportGenerator.GeneratePdf(results);
+        StatisticsManager.RunAnalysisLab2();
+        ReportGenerator.GeneratePdfLab2();
     }
 }

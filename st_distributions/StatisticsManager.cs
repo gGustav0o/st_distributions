@@ -15,15 +15,16 @@ namespace st_distributions
     public class StatisticsManager
     {
         private static readonly int Iterations = 1_000;
-        public static readonly string OutputFolder = "Results";
+        public static readonly string OutputFolderHist = "ResultsHist";
+        public static readonly string OutputFolderBox = "ResultsBox";
         public static Dictionary<string, ReportDistributionInfo> RunAnalysis()
         {
             Dictionary<string, ReportDistributionInfo> infoDict = [];
-            if (Directory.Exists(OutputFolder))
+            if (Directory.Exists(OutputFolderHist))
             {
-                Directory.Delete(OutputFolder, true);
+                Directory.Delete(OutputFolderHist, true);
             }
-            Directory.CreateDirectory(OutputFolder);
+            Directory.CreateDirectory(OutputFolderHist);
 
             int[] SampleSizes = [10, 50, 1000];
             foreach (var size in SampleSizes)
@@ -40,7 +41,7 @@ namespace st_distributions
                 for (int i = 0; i < datasets.Length; i++)
                 {
                     string distr = datasets[i].GetType().Name;
-                    string dir = $"{OutputFolder}/{distr}";
+                    string dir = $"{OutputFolderHist}/{distr}";
                     string filename = $"{dir}/{distr}_{size}.png";
 
                     if (!infoDict.ContainsKey(distr))
@@ -124,10 +125,89 @@ namespace st_distributions
                 Console.WriteLine(set.Key);
             }
 
-            SaveTables(statistics, $"{OutputFolder}/Statistics");
+            SaveTables(statistics, $"{OutputFolderHist}/Statistics");
             
             Console.WriteLine("Все расчёты завершены!");
             return infoDict;
+        }
+        public static Dictionary<string, List<Distribution>> GetDistributions()
+        {
+            Dictionary<string, List<Distribution>> distibutions = [];
+
+            if (Directory.Exists(OutputFolderBox))
+            {
+                Directory.Delete(OutputFolderBox, true);
+            }
+            Directory.CreateDirectory(OutputFolderBox);
+
+            int[] SampleSizes = [20, 200, 1000];
+            foreach (var size in SampleSizes)
+            {
+                Console.WriteLine($"Process samples of size {size}...");
+
+                Distribution[] datasets = [
+                    new Normal(0, 1, size),
+                    new Cauchy(0.0, 1.0, size),
+                    new Poisson(10.0, size),
+                    new Uniform(-Math.Sqrt(3.0), Math.Sqrt(3.0), size),
+                ];
+
+                for (int i = 0; i < datasets.Length; i++)
+                {
+                    string distr = datasets[i].GetType().Name;
+                    string dir = $"{OutputFolderBox}/{distr}";
+
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    string sampleFilename = $"{dir}/{distr}_{size}_data.txt";
+                    SaveSamplesToFile(datasets[i].Data, sampleFilename);
+
+                    if (!distibutions.ContainsKey(datasets[i].GetType().Name))
+                    {
+                        distibutions.Add(datasets[i].GetType().Name, []);
+                    }
+                    distibutions[datasets[i].GetType().Name].Add(datasets[i]);
+                }
+            }
+
+            return distibutions;
+        }
+        public static void RunAnalysisLab2()
+        {
+            var distr = GetDistributions();
+            string fname = $"{OutputFolderBox}/Statistics.csv";
+            string titles = "";
+            using StreamWriter writer = new(fname);
+            foreach (var dataset in distr)
+            {
+                string name = $"{dataset.Key}";
+                string filename = $"{OutputFolderBox}/{name}.png";
+                Plotter.PlotBoxPlot(dataset.Value, filename);
+
+                if (titles.IsEmpty())
+                {
+                    var vals = dataset.Value;
+                    titles = ";" + string.Join(";", vals.Select(d => d.Size));
+                    writer.WriteLine(titles);
+                }
+                string line = $"{dataset.Key};" ;
+                foreach (var d in dataset.Value)
+                {
+                    var q1 = d.Data.Percentile(25);
+                    var q3 = d.Data.Percentile(75);
+                    var iqr = q3 - q1;
+
+                    var lb = q1 - 1.5 * iqr;
+                    var ub = q3 + 1.5 * iqr;
+
+                    int outNum = d.Data.Count(x => x < lb || x > ub);
+                    line += $"{outNum};";
+                }
+                writer.WriteLine(line);
+            }
         }
         private static void SaveSamplesToFile(double[] data, string filename)
         {
