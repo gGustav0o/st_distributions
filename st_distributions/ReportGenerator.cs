@@ -21,14 +21,19 @@ namespace st_distributions
 {
     class ReportGenerator
     {
-        private static readonly string PdfFileName = $"{StatisticsManager.OutputFolderHist}/Report.pdf";
-        private static readonly string PdfFileNameLab2 = $"{StatisticsManager.OutputFolderBox}/Report.pdf";
+        private static readonly string PdfFileName = $"{StatisticsManager.OutputFolderHist}/Lab1_UrtemeevSA_5030102_20101.pdf";
+        private static readonly string PdfFileNameLab2 = $"{StatisticsManager.OutputFolderBox}/Lab2_UrtemeevSA_5030102_20101.pdf";
 
         public static void GeneratePdf(Dictionary<string, ReportDistributionInfo> info)
         {
             Document document = new();
             Section section = document.AddSection();
             section.PageSetup.Orientation = Orientation.Landscape;
+
+            Paragraph mn = section.AddParagraph("Отчет по лабораторной работе 1");
+            mn.Format.Font.Size = 24;
+            mn.Format.Font.Bold = true;
+            mn.Format.SpaceAfter = "10pt";
 
             Paragraph title = section.AddParagraph("Анализ распределений");
             title.Format.Font.Size = 18;
@@ -64,6 +69,11 @@ namespace st_distributions
             Section section = document.AddSection();
             section.PageSetup.Orientation = Orientation.Landscape;
 
+            Paragraph mn = section.AddParagraph("Отчет по лабораторной работе 2");
+            mn.Format.Font.Size = 24;
+            mn.Format.Font.Bold = true;
+            mn.Format.SpaceAfter = "10pt";
+
             Paragraph title = section.AddParagraph("Бокс-плоты");
             title.Format.Font.Size = 18;
             title.Format.Font.Bold = true;
@@ -73,21 +83,23 @@ namespace st_distributions
             string[] files = Directory.GetFiles(dir, "*.png");
             foreach (var item in files)
             {
-                Section tableSection = document.AddSection();
+                //Section tableSection = document.AddSection();
                 string fileName = System.IO.Path.GetFileNameWithoutExtension(item);
                 section.AddParagraph(fileName).Format.Font.Size = 10;
                 MigraDoc.DocumentObjectModel.Shapes.Image image = section.AddImage(item);
-                image.Width = "10cm";
+                image.Width = "12cm";
             }
 
             files = Directory.GetFiles(dir, "*.csv");
             foreach (var item in files)
             {
-                Section tableSection = document.AddSection();
+                //Section tableSection = document.AddSection();
+                var ttl = section.AddParagraph("Количество выбросов");
                 var table = section.AddTable();
                 table.Borders.Width = 0.75;
 
                 var lines = File.ReadAllLines(item);
+                Console.WriteLine(lines.Length);
                 if (lines.Length < 2) return;
 
                 var headers = lines[0].Split(';');
@@ -136,6 +148,10 @@ namespace st_distributions
                     }
                 }
             }
+            //var sgn = document.AddSection();
+            section.AddParagraph("Уртемеев С.А.").Format.Alignment = ParagraphAlignment.Right;
+            section.AddParagraph("5030102/20101").Format.Alignment = ParagraphAlignment.Right;
+
 
             PdfDocumentRenderer renderer = new()
             {
