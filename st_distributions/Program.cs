@@ -6,7 +6,11 @@ class Program
     {
         //var results = st_distributions.StatisticsManager.RunAnalysis();
         //ReportGenerator.GeneratePdf(results);
-        StatisticsManager.RunAnalysisLab2();
-        ReportGenerator.GeneratePdfLab2();
+
+        //StatisticsManager.RunAnalysisLab2();
+        //ReportGenerator.GeneratePdfLab2();
+
+        st_distributions.Lab3.Manager.Run();
     }
+
 }
