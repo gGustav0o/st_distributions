@@ -24,7 +24,7 @@ namespace st_distributions
                 barsCount = (int)(2.0 * Math.Pow(size, 1.0 / 3.0));
             }
 
-            var hist = ScottPlot.Statistics.Histogram.WithBinCount(barsCount, distribution.Data);
+            var hist = ScottPlot.Statistics.Histogram.WithBinCount((int)(barsCount), distribution.Data);
             BarPlot barPlot = plt.Add.Bars(hist.Bins, hist.GetProbability());
 
             foreach (Bar bar in barPlot.Bars)
@@ -70,8 +70,9 @@ namespace st_distributions
                 population.BarAlignment = HorizontalAlignment.Center;
 
                 population.IsVisible = true;
-                population.Bar.IsVisible = true;
+                population.Bar.IsVisible = false;
                 population.Box.IsVisible = true;
+                population.MarkerWidthFraction = 0.0;
 
                 //population.Bar.LineWidth = 2;
                 //population.Width = 0.5;

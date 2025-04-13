@@ -16,6 +16,7 @@ using XamlMath.Exceptions;
 using WpfMath;
 using System.IO;
 using System.Windows.Shapes;
+using static System.Windows.Forms.DataFormats;
 
 namespace st_distributions
 {
@@ -27,14 +28,30 @@ namespace st_distributions
         public static void GeneratePdf(Dictionary<string, ReportDistributionInfo> info)
         {
             Document document = new();
+            var nSec = document.AddSection();
+
+            string spbpu = "Санкт-Петербургский\r\nПолитехнический университет Петра Великого\r\nКафедра «Прикладная математика»";
+            var ppp = nSec.AddParagraph(spbpu);
+            ppp.Format.Alignment = ParagraphAlignment.Center;
+            ppp.Format.SpaceAfter = "50pt";
+
+            Paragraph mn = nSec.AddParagraph("Отчет по лабораторной работе 2");
+            mn.Format.Alignment = ParagraphAlignment.Center;
+            mn.Format.Font.Size = 18;
+            //mn.Format.Font.Bold = true;
+            mn.Format.SpaceAfter = "50pt";
+
+
+            Paragraph vp = nSec.AddParagraph("Выполнил: Уртемеев С.А.");
+            vp.Format.Alignment = ParagraphAlignment.Center;
+
+            Paragraph gr = nSec.AddParagraph("Группа: 5030102/20101");
+            gr.Format.Alignment = ParagraphAlignment.Center;
+
             Section section = document.AddSection();
             section.PageSetup.Orientation = Orientation.Landscape;
 
-            Paragraph mn = section.AddParagraph("Отчет по лабораторной работе 1");
-            mn.Format.Font.Size = 24;
-            mn.Format.Font.Bold = true;
-            mn.Format.SpaceAfter = "10pt";
-
+            
             Paragraph title = section.AddParagraph("Анализ распределений");
             title.Format.Font.Size = 18;
             title.Format.Font.Bold = true;
@@ -65,14 +82,33 @@ namespace st_distributions
         public static void GeneratePdfLab2()
         {
             Document document = new();
+            var nSec = document.AddSection();
+
+            string spbpu = "Санкт-Петербургский\r\nПолитехнический университет Петра Великого\r\nКафедра «Прикладная математика»";
+            var ppp = nSec.AddParagraph(spbpu);
+            ppp.Format.Alignment = ParagraphAlignment.Center;
+            ppp.Format.SpaceAfter = "50pt";
+
+            Paragraph mn = nSec.AddParagraph("Отчет по лабораторной работе 2");
+            mn.Format.Alignment = ParagraphAlignment.Center;
+            mn.Format.Font.Size = 18;
+            //mn.Format.Font.Bold = true;
+            mn.Format.SpaceAfter = "50pt";
+
+            Paragraph tn = nSec.AddParagraph("Построение Бокс-плотов");
+            tn.Format.Alignment = ParagraphAlignment.Center;
+            tn.Format.Font.Size = 18;
+            tn.Format.Font.Bold = true;
+            tn.Format.SpaceAfter = "50pt";
+
+            Paragraph vp = nSec.AddParagraph("Выполнил: Уртемеев С.А.");
+            vp.Format.Alignment = ParagraphAlignment.Center;
+
+            Paragraph gr = nSec.AddParagraph("Группа: 5030102/20101");
+            gr.Format.Alignment = ParagraphAlignment.Center;
 
             Section section = document.AddSection();
             section.PageSetup.Orientation = Orientation.Landscape;
-
-            Paragraph mn = section.AddParagraph("Отчет по лабораторной работе 2");
-            mn.Format.Font.Size = 24;
-            mn.Format.Font.Bold = true;
-            mn.Format.SpaceAfter = "10pt";
 
             Paragraph title = section.AddParagraph("Бокс-плоты");
             title.Format.Font.Size = 18;
@@ -135,7 +171,7 @@ namespace st_distributions
 
                         if (double.TryParse(values[i], out double number))
                         {
-                            paragraph.AddText(Math.Round(number, 4).ToString("F4"));
+                            paragraph.AddText(Math.Round(number, 0).ToString("F0"));
                         }
                         else
                         {
@@ -149,8 +185,8 @@ namespace st_distributions
                 }
             }
             //var sgn = document.AddSection();
-            section.AddParagraph("Уртемеев С.А.").Format.Alignment = ParagraphAlignment.Right;
-            section.AddParagraph("5030102/20101").Format.Alignment = ParagraphAlignment.Right;
+            //section.AddParagraph("Уртемеев С.А.").Format.Alignment = ParagraphAlignment.Right;
+            //section.AddParagraph("5030102/20101").Format.Alignment = ParagraphAlignment.Right;
 
 
             PdfDocumentRenderer renderer = new()

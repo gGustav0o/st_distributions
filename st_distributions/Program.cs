@@ -10,7 +10,9 @@ class Program
         //StatisticsManager.RunAnalysisLab2();
         //ReportGenerator.GeneratePdfLab2();
 
-        st_distributions.Lab3.Manager.Run();
+        //st_distributions.Lab3.Manager.Run();
+
+        st_distributions.Lab4.RegressionComparison.Run();
     }
 
 }
