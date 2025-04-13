@@ -12,7 +12,9 @@ class Program
 
         //st_distributions.Lab3.Manager.Run();
 
-        st_distributions.Lab4.RegressionComparison.Run();
+        //st_distributions.Lab4.RegressionComparison.Run();
+        var analyzer = new st_distributions.Lab5.NormalityAnalyzer();
+        analyzer.Run();
     }
 
 }
